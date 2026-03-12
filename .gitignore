@@ -1,0 +1,35 @@
+# Portfolio-Deploy .gitignore
+
+# === Terraform: generated / sensitive / binary ===
+
+# Provider binaries (~100MB) - re-downloaded by terraform init
+terraform/.terraform/
+
+# Lock file - uncomment next line to ignore (solo dev), keep for team
+# terraform/.terraform.lock.hcl
+
+# State file - contains resource IDs and may contain secrets, NEVER commit
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+
+# Local variable overrides - may contain sensitive values
+terraform/terraform.tfvars
+
+# Zipped Lambda build artifact
+terraform/modules/lambda/dist/
+
+# === Bootstrap: credentials ===
+
+# Contains AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY - NEVER commit
+bootstrap/terraform.env.ps1
+
+# === OS ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === Editor ===
+.vscode/
+*.swp
+*.swo
+*~

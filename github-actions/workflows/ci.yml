@@ -1,0 +1,60 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  CI Workflow — chạy khi tạo PR hoặc push vào branch (non-main) ║
+# ║  Copy file này sang repo React: .github/workflows/ci.yml        ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Run tests
+        run: npm test --if-present -- --watchAll=false --passWithNoTests
+        env:
+          CI: true
+
+      - name: Build
+        run: npm run build
+        env:
+          # Uncomment and add your env vars:
+          # VITE_API_URL: ${{ vars.VITE_API_URL }}
+          CI: true
+
+      - name: Check build output exists
+        run: |
+          BUILD_DIR="${{ vars.BUILD_DIR || 'dist' }}"
+          if [ ! -d "$BUILD_DIR" ]; then
+            echo "ERROR: Build directory '$BUILD_DIR' not found!"
+            echo "Set BUILD_DIR variable in GitHub: Settings → Variables → Actions"
+            echo "  Vite: BUILD_DIR=dist"
+            echo "  CRA:  BUILD_DIR=build"
+            exit 1
+          fi
+          echo "Build successful: $BUILD_DIR/"
+          ls -la "$BUILD_DIR"

@@ -1,0 +1,21 @@
+# Copy file này thành terraform.tfvars rồi chỉnh theo nhu cầu
+# cp terraform.tfvars.example terraform.tfvars
+
+project_name = "portfolio"
+environment  = "prod"
+aws_region   = "ap-southeast-1" # Singapore — closest & cheapest for Vietnam
+vpc_cidr     = "10.0.0.0/16"
+
+# Custom domain (optional — bỏ trống để dùng domain mặc định của CloudFront)
+domain_name = ""
+
+# WAF: bật để chặn spam/bot — tốn ~$7-10/tháng
+# Tắt khi chỉ cần host static React (bật lại khi có traffic thực)
+enable_waf = false
+
+# Giới hạn requests: 500 requests / 5 phút / IP
+waf_rate_limit = 500
+
+# Lambda: API backend placeholder trong VPC — free tier nhưng chưa cần cho static React
+# Bật khi cần backend / kết nối database
+enable_lambda = false
