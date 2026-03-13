@@ -35,9 +35,14 @@ variable "domain_name" {
   default     = ""
 }
 
-# Uncomment when adding custom domain:
-# variable "acm_certificate_arn" {
-#   description = "ACM certificate ARN (must be in us-east-1)"
-#   type        = string
-#   default     = ""
-# }
+variable "include_www_alias" {
+  description = "Also add www.<domain_name> to CloudFront aliases when domain_name is set"
+  type        = bool
+  default     = true
+}
+
+variable "acm_certificate_arn" {
+  description = "ACM certificate ARN (must be in us-east-1)"
+  type        = string
+  default     = ""
+}

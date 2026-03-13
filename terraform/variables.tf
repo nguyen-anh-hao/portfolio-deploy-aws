@@ -33,6 +33,30 @@ variable "domain_name" {
   default     = ""
 }
 
+variable "include_www_alias" {
+  description = "When domain_name is set, also add www.<domain_name> as CloudFront alias and ACM SAN"
+  type        = bool
+  default     = true
+}
+
+variable "create_acm_certificate" {
+  description = "Create ACM certificate in us-east-1 for CloudFront (DNS validation still needs DNS records)"
+  type        = bool
+  default     = true
+}
+
+variable "acm_certificate_arn" {
+  description = "Existing ACM certificate ARN in us-east-1. Leave empty to let Terraform create one"
+  type        = string
+  default     = ""
+}
+
+variable "use_acm_for_cloudfront" {
+  description = "Attach custom domain + ACM certificate to CloudFront. Enable after DNS validation is complete"
+  type        = bool
+  default     = false
+}
+
 variable "enable_waf" {
   description = "Enable WAF on CloudFront — adds ~$7-10/month but protects against spam & bots"
   type        = bool

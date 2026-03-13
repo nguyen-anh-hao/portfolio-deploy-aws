@@ -31,8 +31,7 @@ resource "aws_cloudfront_distribution" "main" {
   # Change to PriceClass_200 or PriceClass_All for Asia-Pacific coverage
   price_class = "PriceClass_100"
 
-  # Uncomment when using custom domain
-  # aliases = var.domain_name != "" ? [var.domain_name] : []
+  aliases = var.domain_name != "" ? concat([var.domain_name], var.include_www_alias ? ["www.${var.domain_name}"] : []) : []
 
   # ── S3 Origin ──────────────────────────────────────────────────────────────
   origin {
@@ -75,14 +74,11 @@ resource "aws_cloudfront_distribution" "main" {
     }
   }
 
-  # Default CloudFront certificate (free). Switch to custom ACM cert when domain is ready.
   viewer_certificate {
-    cloudfront_default_certificate = true
-    # Uncomment below when using custom domain + ACM cert (cert must be in us-east-1):
-    # cloudfront_default_certificate = false
-    # acm_certificate_arn            = var.acm_certificate_arn
-    # ssl_support_method             = "sni-only"
-    # minimum_protocol_version       = "TLSv1.2_2021"
+    cloudfront_default_certificate = var.domain_name == ""
+    acm_certificate_arn            = var.domain_name != "" ? var.acm_certificate_arn : null
+    ssl_support_method             = var.domain_name != "" ? "sni-only" : null
+    minimum_protocol_version       = var.domain_name != "" ? "TLSv1.2_2021" : "TLSv1"
   }
 
   tags = {

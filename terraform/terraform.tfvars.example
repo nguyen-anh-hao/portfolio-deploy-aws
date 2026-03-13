@@ -9,6 +9,19 @@ vpc_cidr     = "10.0.0.0/16"
 # Custom domain (optional — bỏ trống để dùng domain mặc định của CloudFront)
 domain_name = ""
 
+# Tự thêm alias www.<domain_name> trên CloudFront + ACM SAN
+include_www_alias = true
+
+# Tự tạo ACM cert ở us-east-1 (vẫn cần thêm DNS record ở Cloudflare để verify)
+create_acm_certificate = true
+
+# Nếu đã có cert ACM ở us-east-1 thì điền ARN, để trống để Terraform tự tạo
+acm_certificate_arn = ""
+
+# Sau khi đã thêm DNS validation records vào Cloudflare và cert đã ISSUED,
+# bật true để CloudFront dùng custom domain + ACM cert.
+use_acm_for_cloudfront = false
+
 # WAF: bật để chặn spam/bot — tốn ~$7-10/tháng
 # Tắt khi chỉ cần host static React (bật lại khi có traffic thực)
 enable_waf = false

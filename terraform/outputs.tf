@@ -15,6 +15,23 @@ output "cloudfront_distribution_id" {
   value       = module.cloudfront.distribution_id
 }
 
+output "acm_certificate_arn" {
+  description = "ACM certificate ARN used by CloudFront (us-east-1)"
+  value       = local.cloudfront_acm_certificate_arn != "" ? local.cloudfront_acm_certificate_arn : "(No custom domain certificate configured)"
+}
+
+output "acm_dns_validation_records" {
+  description = "Add these CNAME records in your DNS provider (Cloudflare) to validate ACM"
+  value = length(aws_acm_certificate.cloudfront) > 0 ? [
+    for option in aws_acm_certificate.cloudfront[0].domain_validation_options : {
+      domain_name  = option.domain_name
+      record_name  = option.resource_record_name
+      record_type  = option.resource_record_type
+      record_value = option.resource_record_value
+    }
+  ] : []
+}
+
 # ── S3 ────────────────────────────────────────────────────────────────────────
 
 output "s3_bucket_name" {

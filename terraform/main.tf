@@ -37,18 +37,51 @@ module "waf" {
   rate_limit   = var.waf_rate_limit
 }
 
+# ── ACM Certificate (us-east-1, required by CloudFront) ─────────────────────
+
+locals {
+  custom_domain_enabled         = var.domain_name != ""
+  requested_subject_alt_names   = var.include_www_alias && var.domain_name != "" ? ["www.${var.domain_name}"] : []
+  cloudfront_acm_certificate_arn = var.use_acm_for_cloudfront ? (
+    var.acm_certificate_arn != "" ? var.acm_certificate_arn : (
+      var.create_acm_certificate && local.custom_domain_enabled ? aws_acm_certificate.cloudfront[0].arn : ""
+    )
+  ) : ""
+  cloudfront_domain_name = local.cloudfront_acm_certificate_arn != "" ? var.domain_name : ""
+  cloudfront_include_www_alias = local.cloudfront_domain_name != "" ? var.include_www_alias : false
+}
+
+resource "aws_acm_certificate" "cloudfront" {
+  count = var.create_acm_certificate && local.custom_domain_enabled && var.acm_certificate_arn == "" ? 1 : 0
+
+  provider                  = aws.us_east_1
+  domain_name               = var.domain_name
+  subject_alternative_names = local.requested_subject_alt_names
+  validation_method         = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-cloudfront-cert"
+  }
+}
+
 # ── CloudFront (CDN + SPA routing + WAF) ─────────────────────────────────────
 
 module "cloudfront" {
   source = "./modules/cloudfront"
 
-  project_name     = var.project_name
-  environment      = var.environment
-  s3_bucket_id     = module.s3.bucket_id
-  s3_bucket_arn    = module.s3.bucket_arn
-  s3_bucket_domain = module.s3.bucket_regional_domain_name
-  waf_acl_arn      = module.waf.waf_acl_arn
-  domain_name      = var.domain_name
+  project_name        = var.project_name
+  environment         = var.environment
+  s3_bucket_id        = module.s3.bucket_id
+  s3_bucket_arn       = module.s3.bucket_arn
+  s3_bucket_domain    = module.s3.bucket_regional_domain_name
+  waf_acl_arn         = module.waf.waf_acl_arn
+  domain_name         = local.cloudfront_domain_name
+  include_www_alias   = local.cloudfront_include_www_alias
+  acm_certificate_arn = local.cloudfront_acm_certificate_arn
 }
 
 # ── Lambda (API placeholder — in VPC, ready for future DB connection) ─────────
